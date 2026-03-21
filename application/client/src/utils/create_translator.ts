@@ -26,7 +26,9 @@ export async function createTranslator(params: Params): Promise<Translator> {
     `Unsupported target language code: ${params.targetLanguage}`,
   );
 
-  const { CreateMLCEngine } = await import("@mlc-ai/web-llm");
+  const { CreateMLCEngine } = await import(
+    /* webpackChunkName: "web-llm" */ "@mlc-ai/web-llm"
+  );
   const engine = await CreateMLCEngine("gemma-2-2b-jpn-it-q4f16_1-MLC");
 
   return {

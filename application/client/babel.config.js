@@ -6,7 +6,8 @@ module.exports = {
       {
         targets: "ie 11",
         corejs: "3",
-        modules: "commonjs",
+        // Keep ESM syntax for webpack to preserve import() code splitting.
+        modules: false,
         useBuiltIns: false,
       },
     ],

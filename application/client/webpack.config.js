@@ -67,7 +67,7 @@ const config = {
   },
 
   output: {
-    chunkFilename: "scripts/chunk-[contenthash].js",
+    chunkFilename: "scripts/[name].[contenthash].js",
     filename: "scripts/[name].[contenthash].js",
     path: DIST_PATH,
     publicPath: "/",
