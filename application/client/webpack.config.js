@@ -14,6 +14,51 @@ const DIST_PATH = path.resolve(__dirname, "../dist");
 
 const isProd = process.env.NODE_ENV === "production";
 
+class NonBlockingCssPlugin {
+  apply(compiler) {
+    compiler.hooks.compilation.tap("NonBlockingCssPlugin", (compilation) => {
+      const hooks = HtmlWebpackPlugin.getHooks(compilation);
+      hooks.alterAssetTagGroups.tap("NonBlockingCssPlugin", (data) => {
+        const stylesheetHrefs = [];
+        data.headTags = data.headTags.map((tag) => {
+          if (
+            tag.tagName !== "link" ||
+            tag.attributes === undefined ||
+            tag.attributes.rel !== "stylesheet"
+          ) {
+            return tag;
+          }
+
+          if (typeof tag.attributes.href === "string") {
+            stylesheetHrefs.push(tag.attributes.href);
+          }
+
+          return {
+            ...tag,
+            attributes: {
+              ...tag.attributes,
+              rel: "preload",
+              as: "style",
+              onload: "this.onload=null;this.rel='stylesheet'",
+            },
+          };
+        });
+
+        for (const href of stylesheetHrefs) {
+          data.headTags.push({
+            tagName: "noscript",
+            voidTag: false,
+            attributes: {},
+            innerHTML: `<link rel="stylesheet" href="${href}">`,
+          });
+        }
+
+        return data;
+      });
+    });
+  }
+}
+
 /** @type {import('webpack').Configuration} */
 const config = {
   devServer: {
@@ -106,6 +151,7 @@ const config = {
           }
         : false,
     }),
+    ...(isProd ? [new NonBlockingCssPlugin()] : []),
     ...(process.env.ANALYZE === "true" ? [new BundleAnalyzerPlugin()] : []),
   ],
 
